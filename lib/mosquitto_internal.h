@@ -332,6 +332,7 @@ struct mosquitto {
 	void (*on_unsubscribe_v5)(struct mosquitto *, void *userdata, int mid, const mosquitto_property *props);
 	void (*on_log)(struct mosquitto *, void *userdata, int level, const char *str);
 	/*void (*on_error)();*/
+	unsigned int log_levels;
 	char *host;
 	uint16_t port;
 	char *bind_address;

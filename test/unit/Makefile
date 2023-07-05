@@ -32,8 +32,18 @@ LIB_OBJS = memory_mosq.o \
 		   util_topic.o \
 		   utf8_mosq.o
 
+LOGS_TEST_OBJS = logs_test.o \
+				 logs_stubs.o
+
+LOGS_TEST_LIB_OBJS = callbacks.o \
+					 logging_mosq.o \
+					 memory_mosq.o \
+					 mosquitto.o \
+					 utf8_mosq.o
+
 BRIDGE_TOPIC_TEST_OBJS = \
 		bridge_topic_test.o \
+		memory_mosq.o \
 		stubs.o \
 
 BRIDGE_TOPIC_OBJS = \
@@ -97,6 +107,9 @@ all : test
 
 check : test
 
+logs_test: ${LOGS_TEST_OBJS} ${LOGS_TEST_LIB_OBJS}
+	$(CROSS_COMPILE)$(CC) $(LDFLAGS) -o $@ $^ $(LDADD)
+
 mosq_test : ${TEST_OBJS} ${LIB_OBJS}
 	$(CROSS_COMPILE)$(CC) $(LDFLAGS) -o $@ $^ $(LDADD)
 
@@ -116,8 +129,14 @@ subs_test : ${SUBS_TEST_OBJS} ${SUBS_OBJS}
 bridge_topic.o : ../../src/bridge_topic.c
 	$(CROSS_COMPILE)$(CC) $(CPPFLAGS) $(CFLAGS) -DWITH_BROKER -DWITH_BRIDGE -c -o $@ $^
 
+callbacks.o : ../../lib/callbacks.c
+	$(CROSS_COMPILE)$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $^
+
 database.o : ../../src/database.c
 	$(CROSS_COMPILE)$(CC) $(CPPFLAGS) $(CFLAGS) -DWITH_BROKER -DWITH_PERSISTENCE -c -o $@ $^
+
+logging_mosq.o : ../../lib/logging_mosq.c
+	$(CROSS_COMPILE)$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $^
 
 memory_mosq.o : ../../lib/memory_mosq.c
 	$(CROSS_COMPILE)$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $^
@@ -126,6 +145,9 @@ memory_public.o : ../../src/memory_public.c
 	$(CROSS_COMPILE)$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $^
 
 misc_mosq.o : ../../lib/misc_mosq.c
+	$(CROSS_COMPILE)$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $^
+
+mosquitto.o : ../../lib/mosquitto.c
 	$(CROSS_COMPILE)$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $^
 
 packet_datatypes.o : ../../lib/packet_datatypes.c
@@ -167,9 +189,10 @@ util_topic.o : ../../lib/util_topic.c
 utf8_mosq.o : ../../lib/utf8_mosq.c
 	$(CROSS_COMPILE)$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $^
 
-build : mosq_test bridge_topic_test persist_read_test persist_write_test subs_test
+build : logs_test mosq_test bridge_topic_test persist_read_test persist_write_test subs_test
 
 test-lib : build
+	./logs_test
 	./mosq_test
 
 test-broker : build
